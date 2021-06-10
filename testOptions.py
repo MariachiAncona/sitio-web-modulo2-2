@@ -1,4 +1,5 @@
 import sys, getopt
+import Fernet
 
 def imprimeAyuda():
    print("""
@@ -13,8 +14,15 @@ def imprimeAyuda():
       """)
 
 def elArchivoEsValido(archivo):
-    #Valida el archivo
-    return True
+    try:
+        with open(archivo, 'r') as f:
+            f.close()
+            return True
+    except FileNotFoundError as e:
+        return False
+    except IOError as e:
+        return False
+    
 
 def cifraElArchivoSimetrico(archivo):
     print('Aqui se inserta Fernet para cifrado')
