@@ -1,3 +1,4 @@
+#Se importan las bibliotecas necesarias
 import sys, getopt
 from cryptography.fernet import Fernet
 from Crypto.PublicKey import RSA
@@ -5,6 +6,11 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
 
 
+
+# Esta funcion sirve para decifrar el archivo con algoritmo asimetrico,
+# como ha dado errores en el decifrado se agrego un bloque try-except
+# esto con la finalidad de revisar el error al momento de decodificar,
+# utiliza directamente los archivos creados por default al momento de cifrar
 def decifraElArchivo(archivo):
     print('Decifra con RSA: ', archivo)
     try:
@@ -27,6 +33,10 @@ def decifraElArchivo(archivo):
     except ValueError as e:
         return print('Falla al decifrar el archivo')
 
+
+# Esta funcion cifra el archivo de manera asimetrica, manda a llamar
+# a la funcion para generar claves privada y publica, despues cifra el
+# archivo con uso de las llaves y escribe el archivo.
 def cifraElArchivo(archivo):
     print('Cifrado con RSA: ', archivo)
 
@@ -46,7 +56,8 @@ def cifraElArchivo(archivo):
     [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
     file_out.close()
 
-
+# Esta funcion genera las claves privadas y publicas para su uso en el 
+# algoritmo de cifrado asimetrico, escribe las claves en archivos
 def generaClaves():
     key = RSA.generate(2048)
     private_key = key.export_key()
@@ -59,6 +70,8 @@ def generaClaves():
     file_out.write(public_key)
     file_out.close()
 
+# Esta es una funcion auxiliar que unicamente imprime la ayuda para no
+# tener que repetir constantemente todas las lineas
 def imprimeAyuda():
    print("""
       Uso:
@@ -77,6 +90,7 @@ def imprimeAyuda():
 
       """)
 
+# Esta funcion se utiliza para validar que el archivo se valido y se pueda leer
 def elArchivoEsValido(archivo):
     try:
         with open(archivo, 'r') as f:
@@ -87,12 +101,18 @@ def elArchivoEsValido(archivo):
     except IOError as e:
         return False
 
+# Esta funcion genera la clave para el uso del algoritmo simetrico
+# escribe la clave en un archivo
 def generaClave(clave="clave.key"):
     claveCifrado = Fernet.generate_key()
     with open( clave, "wb") as archivoClave:
         archivoClave.write(claveCifrado)
     return clave
 
+
+#Esta función cifra el archivo con uso de algoritmo simetrico
+#Se utiliza fernet, se crea la llave y se genera el archivo de
+#de la llave, se cifra la informacion utilizando la llave creada
 def cifraElArchivoSimetrico(archivo):
     print('Cifrado simetrico de ', archivo)
     with open(generaClave(), "rb") as key:
@@ -104,6 +124,8 @@ def cifraElArchivoSimetrico(archivo):
         file.close()
     return
 
+# Esta funcion decifra un archivo usando la clave generada con Fernet
+# de momento se encuentra directo el uso de la clave
 def decifraElArchivoSimetrico(archivo):
     print('Decifrado simetrico de ', archivo)
     key = "clave.key"
@@ -129,7 +151,9 @@ def decifraElArchivoSimetrico(archivo):
     except IOError as e:
         print("El archivo de la llave es invalido")
 
-
+#Esta es la funcion principal, activa las banderas correspondientes dependiendo de
+# los argumentos de entrada, valida el archivo de entrada y despliega los mensajes
+# persinalizados para casos de errores
 def main(argv):
    inputfile = ''
    seDecifra = False
