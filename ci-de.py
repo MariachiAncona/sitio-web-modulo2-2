@@ -7,23 +7,25 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 
 def decifraElArchivo(archivo):
     print('Decifra con RSA: ', archivo)
-    file_in = open(archivo, "wb+")
+    try:
+        file_in = open(archivo, "wb+")
 
-    private_key = RSA.import_key(open("private.pem").read())
+        private_key = RSA.import_key(open("private.pem").read())
 
-    enc_session_key, nonce, tag, ciphertext = [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
+        enc_session_key, nonce, tag, ciphertext = [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
 
-    # Decrypt the session key with the private RSA key
-    cipher_rsa = PKCS1_OAEP.new(private_key)
-    session_key = cipher_rsa.decrypt(enc_session_key)
+        # Decrypt the session key with the private RSA key
+        cipher_rsa = PKCS1_OAEP.new(private_key)
+        session_key = cipher_rsa.decrypt(enc_session_key)
 
-    # Decrypt the data with the AES session key
-    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
-    data = cipher_aes.decrypt_and_verify(ciphertext, tag)
-    #file_in.write(data)
-    #file_in.close()
-    print(data.decode("utf-8"))
-    return
+        # Decrypt the data with the AES session key
+    
+        cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+        data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+        file_in.write(data)
+        file_in.close()
+    except ValueError as e:
+        return print('Falla al decifrar el archivo')
 
 def cifraElArchivo(archivo):
     print('Cifrado con RSA: ', archivo)
@@ -61,11 +63,17 @@ def imprimeAyuda():
    print("""
       Uso:
 
-      Para cifrar archivos:
-      cifra.py -i <inputfile> -c <size> -o <outputfile>
+      Para cifrar archivos con algoritmo simetrico:
+      python ci-de.py -i <inputfile> 
 
-      Para descifrar archivos:
-      cifra.py -i <inputfile> -d <keyfile> -o <outputfile>
+      Para descifrar archivos con algoritmo simetrico:
+      python ci-de.py -i <inputfile> -d 
+
+      Para cifrar archivos con algoritmo asimetrico:
+      python ci-de.py -i <inputfile> -a
+
+      Para descifrar archivos con algoritmo asimetrico:
+      python ci-de.py -i <inputfile> -da
 
       """)
 
@@ -142,7 +150,7 @@ def main(argv):
 
    for opt, arg in opts:
       if opt == '-h':
-         print ('cifraS.py -i <inputfile> -o <outputfile>')
+         imprimeAyuda()
          sys.exit()
       elif opt in ("-i", "--ifile"):
          inputfile = arg
