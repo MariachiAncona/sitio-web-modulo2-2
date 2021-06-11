@@ -1,5 +1,5 @@
 import sys, getopt
-import Fernet
+from cryptography.fernet import Fernet
 
 def imprimeAyuda():
    print("""
@@ -22,15 +22,55 @@ def elArchivoEsValido(archivo):
         return False
     except IOError as e:
         return False
-    
+
+
+def cargarClave(clave="clave.key"):
+    #abre el archivo de la llave
+    return open(clave, "wb").read
+
+def generaClave(clave="clave.key"):
+    claveCifrado = Fernet.generate_key()
+    with open( clave, "wb+") as archivoClave:
+        archivoClave.write(claveCifrado)
+    return clave
 
 def cifraElArchivoSimetrico(archivo):
-    print('Aqui se inserta Fernet para cifrado')
+    print('Cifrado simetrico de ', archivo)
+    with open(generaClave(), "rb") as key:
+        ferni = Fernet(key.read())
+    with open(archivo, "wb+") as file:
+        datosCifrados = ferni.encrypt(file.read())
+        file.write(datosCifrados)
+        file.close()
     return
 
 def decifraElArchivoSimetrico(archivo):
-    print('Aqui se inserta Fernet para decifrado')
-    return
+    print('Decifrado simetrico de ', archivo)
+    #key = "clave.key"
+    key = input("Ingresa el nombre de la clave: ")
+    try:
+        with open(key, 'rb') as f:
+            ferni = Fernet(f.read())
+            
+            with open(archivo, "rb") as file:
+                encrypted_data = file.read()
+                decrypted_data = ferni.decrypt(encrypted_data)
+                print(encrypted_data)
+                file.close()
+            with open(archivo, "wb") as file:
+                file.write(decrypted_data)
+                print(decrypted_data)
+                file.close()
+            
+
+    except FileNotFoundError as e:
+        print("El archivo de la llave es invalido_!")
+
+    except IOError as e:
+        print("El archivo de la llave es invalido")
+
+
+
 
 def cifraElArchivo(archivo):
     print('Aqui se inserta RSA')
